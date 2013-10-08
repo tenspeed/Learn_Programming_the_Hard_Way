@@ -12,7 +12,7 @@ the_lexicon = [('direction', 'north'),
 			   ('stop', 'of')]
 
 def scan(a_string):
-	words = a_string.split()
+	words = a_string.lower().split()
 	result = []
 	for word in words:
 		match = False
