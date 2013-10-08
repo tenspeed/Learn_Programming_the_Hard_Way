@@ -15,9 +15,19 @@ def scan(a_string):
 	words = a_string.split()
 	result = []
 	for word in words:
-		for i in range(len(the_lexicon)):
+		match = False
+		i = 0
+		while not match:
 			if word in the_lexicon[i]:
 				result.append(the_lexicon[i])
+				match = True
+			elif i >= (len(the_lexicon) - 1):
+				try:
+					num = int(word)
+					result.append(('number', num))
+				except ValueError:
+					result.append(('error', word))
+				match = True
 			else:
-				pass
+				i += 1
 	return result
