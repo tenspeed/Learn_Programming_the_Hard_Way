@@ -17,6 +17,7 @@ class Room(object):
 		self.name = name
 		self.description = description
 		self.paths = {}
+		self.guesses = 0
 
 	def go(self, direction):
 		return self.paths.get(direction, None)
@@ -117,7 +118,7 @@ escape_pod.add_paths({
     '*': the_end_loser
 })
 
-generic_death = Room("death", quips[randint(0, (len(quips) - 1))])
+generic_death = Room("death", quips[randint(0, len(quips) - 1)])
 
 the_bridge.add_paths({
     'throw the bomb': generic_death,
@@ -126,7 +127,8 @@ the_bridge.add_paths({
 
 laser_weapon_armory.add_paths({
     armory_code: the_bridge,
-    '*': generic_death
+    '*': generic_death,
+    'wrong code': laser_weapon_armory
 })
 
 central_corridor.add_paths({
