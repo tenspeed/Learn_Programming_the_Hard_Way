@@ -10,7 +10,6 @@ $if room.name == "death":
 	<p><a href="/">Play Again?</a></p>
 $else:
 	<p>
-	wrong tries: $room.guesses
 	<form action="/game" method="POST">
 		- <input type="text" name="action"> <input type="SUBMIT">
 	</form>
