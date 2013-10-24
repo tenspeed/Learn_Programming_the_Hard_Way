@@ -4,47 +4,53 @@ from pygame.locals import *
 
 pygame.init()
 
-class GameObject(object):
+class GameSprite(pygame.sprite.Sprite):
 
-	def __init__(self, a_surface, height, speed):
+	def __init__(self, an_image, speed):
+		pygame.sprite.Sprite.__init__(self)
+		self.image = pygame.image.load(os.path.join('data', an_image)).convert_alpha()
 		self.speed = speed
-		self.a_surface = a_surface
-		self.height = height
-		self.pos = a_surface.get_rect().move(0, self.height)
-		
-def load_image(new_image):
-	new_surface = pygame.image.load(os.path.join('data', new_image)).convert_alpha()
-	return new_surface
+		self.rect = self.image.get_rect()
 
-dirty_rects = []
+# initialize the game window size
 screen_width = 1366
 screen_height = 768
-player_speed = 1
+# set the player movement speed
+player_speed = 2
+# create the game window
 screen = pygame.display.set_mode((screen_width, screen_height))
-player_surf = load_image('player.png')
-background_surf = load_image('background.png')
+# load the background image
+background_surf = pygame.image.load(os.path.join('data', 'background.png')).convert_alpha()
+# blit the background image to the game window
 screen.blit(background_surf, (0, 0))
-player = GameObject(player_surf, 0, player_speed)
-	
+
+
+# create a group for the player sprite
+player_sprites = pygame.sprite.Group()
+# create the player sprite
+player = GameSprite('player.png', player_speed)
+# add the player sprite to the player group
+player_sprites.add(player)
+
+# main program loop
 while True:
 
+	# exit gracefully if game window is closed
 	for event in pygame.event.get():
 		if event.type == QUIT:
 			sys.exit()
 
-	screen.blit(background_surf, player.pos, player.pos)
+	# handle keyboard input
 	keys = pygame.key.get_pressed()
-	if keys[K_a]:
-		player.pos = player.pos.move(-player.speed, 0)
-	if keys[K_d]:
-		player.pos = player.pos.move(player.speed, 0)
 	if keys[K_w]:
-		player.pos = player.pos.move(0, -player.speed)
+		player.rect = player.rect.move(0, -player.speed)
 	if keys[K_s]:
-		player.pos = player.pos.move(0, player.speed)
+		player.rect = player.rect.move(0, player.speed)
+	if keys[K_a]:
+		player.rect = player.rect.move(-player.speed, 0)
+	if keys[K_d]:
+		player.rect = player.rect.move(player.speed, 0)
 	
-	# erase last player sprite
-	# blit new player to screen in different location
-	screen.blit(player_surf, player.pos)
-	# show it all on the screen
+	player_sprites.clear(screen, background_surf)
+	player_sprites.draw(screen)
 	pygame.display.update()
