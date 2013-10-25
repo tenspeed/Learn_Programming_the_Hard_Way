@@ -47,10 +47,6 @@ for i in range(2):
 	all_sprites.add(block)
 	block_sprites.add(block)
 
-ignore_up = False
-ignore_down = False
-ignore_left = False
-ignore_right = False
 collison = []
 # main program loop
 while True:
@@ -63,35 +59,27 @@ while True:
 	# handle keyboard input
 	keys = pygame.key.get_pressed()
 	# if 'w' is pressed and we're not colliding above, move up
-	if keys[K_w] and not ignore_up:
+	if keys[K_w]:
 		# update player rectange with new coordinates
 		player.rect = player.rect.move(0, -player.speed)
-		# set all other directional ignore flags to False
-		# this prevents the controlls from getting screwed up
-		# after a collision
-		ignore_down, ignore_left, ignore_right = False, False, False
-		# check for a collision, if so set the ignore_up flag to True
-		# to prevent moving into the object
+		# check for a collision, if so undo the previous move
 		if pygame.sprite.spritecollide(player, block_sprites, False):
-			ignore_up = True
+			player.rect = player.rect.move(0, player.speed)
 	# if 's' is pressed and we're not colliding below, move down
-	if keys[K_s] and not ignore_down:
+	if keys[K_s]:
 		player.rect = player.rect.move(0, player.speed)
-		ignore_up, ignore_left, ignore_right = False, False, False
 		if pygame.sprite.spritecollide(player, block_sprites, False):
-			ignore_down = True
+			player.rect = player.rect.move(0, -player.speed)
 	# if 'a' is pressed and we're not colliding to the left, move left
-	if keys[K_a] and not ignore_left:
+	if keys[K_a]:
 		player.rect = player.rect.move(-player.speed, 0)
-		ignore_right, ignore_up, ignore_down = False, False, False
 		if pygame.sprite.spritecollide(player, block_sprites, False):
-			ignore_left = True	
+			player.rect = player.rect.move(player.speed, 0)
 	# if 'd' is pressed and we're not colliding to the right, move right
-	if keys[K_d] and not ignore_right:
+	if keys[K_d]:
 		player.rect = player.rect.move(player.speed, 0)
-		ignore_left, ignore_up, ignore_down = False, False, False
 		if pygame.sprite.spritecollide(player, block_sprites, False):
-			ignore_right = True
+			player.rect = player.rect.move(-player.speed, 0)
 		
 	# check if player is off screen, if so, loop around
 	if player.rect.x > screen_width:
