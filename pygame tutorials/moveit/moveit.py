@@ -5,7 +5,7 @@ from pygame.locals import *
 pygame.init()
 class GameSprite(pygame.sprite.Sprite):
 
-	def __init__(self, an_image):
+	def __init__(self, an_image, v_max = None):
 		pygame.sprite.Sprite.__init__(self)
 		if an_image == None:
 			self.image = pygame.Surface([1366, 100])
@@ -14,7 +14,39 @@ class GameSprite(pygame.sprite.Sprite):
 		else:
 			self.image = pygame.image.load(os.path.join('data', an_image)).convert_alpha()
 			self.rect = self.image.get_rect()
-			self.vx, self.vx_old, self.vy, self.vy_old = 0, 0, 1, 1
+			self.vx, self.vx_old, self.vy, self.vy_old = 0, 0, 0, 0
+			self.v_max = v_max
+
+	def move_x(self, a_x):
+		# calculate sprite movement in the x-direction
+		self.vx = self.vx_old + a_x
+		# check if sprite is moving faster than v_max, if so, set speed equal to v_max
+		# this requires checking which direction we're moving first by looking to
+		# see if self.vx is positive (moving right) or negative (moving left).
+		if self.vx > 0:
+			if self.vx > self.v_max:
+				self.vx = self.v_max
+		elif self.vx < 0:
+			if self.vx < -self.v_max:
+				self.vx = -self.v_max
+		# update sprite rectange with new x-coordinates
+		self.rect = self.rect.move(self.vx, 0)
+		self.vx_old = self.vx
+
+	def move_y(self, a_y):
+		# calculate sprite movement in the y-direction
+		self.vy = self.vy_old + a_y
+		print self.vy
+		# check if we're moving faster than v_max again.
+		if self.vy > 0:
+			if self.vy >= self.v_max:
+				self.vy = self.v_max
+		elif self.vy < 0:
+			if self.vy <= -self.v_max:
+				self.vy = -self.v_max
+		# update the player rectange with the new y-coordinates
+		self.rect = self.rect.move(0, self.vy)
+		self.vy_old = self.vy
 
 # initialize the game window size
 screen_width = 1366
@@ -59,11 +91,16 @@ for i in range(1):
 
 collison = []
 v_max = 25
-player_sprites.draw(screen)
-
+#player_sprites.draw(screen)
+block_sprites.draw(screen)
+ground_sprites.draw(screen)
+#all_sprites.draw(screen)
 
 a_x = 0
+a_y = 1
 brake = True
+jump = False
+counter = 0
 # main program loop
 while True:
 
@@ -72,19 +109,6 @@ while True:
 		if event.type == QUIT:
 			sys.exit()
 
-	# physics time
-	player.vy += 1
-	if player.vy >= v_max:
-		player.vy = v_max
-	player.rect = player.rect.move(0, player.vy)
-	if pygame.sprite.spritecollide(player, ground_sprites, False):
-		player.rect = player.rect.move(0, -player.vy)
-		player.vy = 1
-	if pygame.sprite.spritecollide(player, block_sprites, False):
-		player.rect = player.rect.move(0, -player.vy)
-		player.vy = 1
-
-	
 	# handle keyboard input
 	keys = pygame.key.get_pressed()
 	# if 'a' is pressed move left
@@ -95,95 +119,93 @@ while True:
 	if keys[K_d]:
 		a_x = 2
 		brake = False
+	# if SPACEBAR is pressed, jump
+	if keys[K_SPACE]:
+		# check if already jumping to prevent double-jump
+		if jump:
+			pass
+		else:
+			a_y = -3
+			jump = True
 
-	# calculate player movement
-	player.vx = player.vx_old + a_x
-	if player.vx > 0:
-		if player.vx > v_max:
-			player.vx = v_max
-	elif player.vx < 0:
-		if player.vx < -v_max:
-			player.vx = -v_max
-	# update player rectange with new coordinates
-	player.rect = player.rect.move(player.vx, 0)
-	# check for a collision, if so undo the previous move
-	if pygame.sprite.spritecollide(player, block_sprites, False):
-		player.rect = player.rect.move(-player.vx, 0)
-		player.vx, player.vx_old = 0, 0
-	# check if player has gone off left side of screen, if so, put him back
-	elif player.rect.x <= 0:
-			player.rect.x = 0
-			player.rect.y = (screen_height - 160)
-			player.vx, player.vx_old = 0, 0
-	# check if player has gone off right side of screen, if so, put him back
-	elif player.rect.x >= (screen_width - 60):
-			player.rect.x = (screen_width - 60)
-			player.rect.y = (screen_height - 160)
-			player.vx, player.vx_old = 0, 0
-	# if no collisions, carry on
-	else:
-		player.vx_old = player.vx
+	# small non-blocking loop to calculate jump time
+	if jump:
+		counter += 1
+		if counter > 5:
+			counter = 0
+			a_y = 1
 
+	# check to see if the player has stopped pressing 'a' or 'd'
+	# if so, initiate braking, unless the key pressed was the spacebar
 	if event.type == pygame.KEYUP:
-		brake = True
+		if (event.key == pygame.K_a or pygame.K_d) and not jump:
+			brake = True
 
 	# we want our natural state to be at rest
+	
+			#player.vx = player.vx_old + a_x
+			#player.rect = player.rect.move(player.vx, 0)
+			# check for a collision, if so undo the previous move
+			#if pygame.sprite.spritecollide(player, block_sprites, False):
+			#	player.rect = player.rect.move(-player.vx, 0)
+			#	player.vx, player.vx_old = 0, 0
+			# check if player has gone off left side of screen, if so, put him back
+			#elif player.rect.x <= 0:
+			#	player.rect.x = 0
+			#	player.rect.y = (screen_height - 160)
+			#	player.vx, player.vx_old = 0, 0
+			# check if player has gone off right side of screen, if so, put him back
+			#elif player.rect.x >= (screen_width - 60):
+			#	player.rect.x = (screen_width - 60)
+			#	player.rect.y = (screen_height - 160)
+			#	player.vx, player.vx_old = 0, 0
+			# if no collisions, carry on
+			#else:
+			#	player.vx_old = player.vx
 	if brake:
 		if player.vx > 0:
 			a_x = -3
-			player.vx = player.vx_old + a_x
-			player.rect = player.rect.move(player.vx, 0)
-			# check for a collision, if so undo the previous move
-			if pygame.sprite.spritecollide(player, block_sprites, False):
-				player.rect = player.rect.move(-player.vx, 0)
-				player.vx, player.vx_old = 0, 0
-			# check if player has gone off left side of screen, if so, put him back
-			elif player.rect.x <= 0:
-				player.rect.x = 0
-				player.rect.y = (screen_height - 160)
-				player.vx, player.vx_old = 0, 0
-			# check if player has gone off right side of screen, if so, put him back
-			elif player.rect.x >= (screen_width - 60):
-				player.rect.x = (screen_width - 60)
-				player.rect.y = (screen_height - 160)
-				player.vx, player.vx_old = 0, 0
-			# if no collisions, carry on
-			else:
-				player.vx_old = player.vx
-			if player.vx <= 0:
-				player.vx, player.vx_old = 0, 0
-				brake = False
-
 		if player.vx < 0:
-			a_x = 3
-			player.vx = player.vx_old + a_x
-			player.rect = player.rect.move(player.vx, 0)
-			# check for a collision, if so undo the previous move
-			if pygame.sprite.spritecollide(player, block_sprites, False):
-				player.rect = player.rect.move(-player.vx, 0)
-				player.vx, player.vx_old = 0, 0
-			# check if player has gone off left side of screen, if so, put him back
-			elif player.rect.x <= 0:
-				player.rect.x = 0
-				player.rect.y = (screen_height - 160)
-				player.vx, player.vx_old = 0, 0
-			# check if player has gone off right side of screen, if so, put him back
-			elif player.rect.x >= (screen_width - 60):
-				player.rect.x = (screen_width - 60)
-				player.rect.y = (screen_height - 160)
-				player.vx, player.vx_old = 0, 0
-			# if no collisions, carry on
-			else:
-				player.vx_old = player.vx
-			if player.vx >= 0:
-				player.vx, player.vx_old = 0, 0
-				brake = False
+			a_x = 3			
+	player.move_x(a_x)
+	# check for a collision with the blocks, if so undo the previous move
+	if pygame.sprite.spritecollide(player, block_sprites, False):
+		player.rect = player.rect.move(-player.vx, 0)
+		player.vx, player.vx_old = 0, 0
+	# check if sprite has gone off left side of screen, if so, put it back
+	if player.rect.x <= 0:
+		player.rect = player.rect.move(-player.vx, 0)
+		player.vx, player.vx_old = 0, 0
+	# check if sprite has gone off right side of screen, if so, put it back
+	if player.rect.x >= (screen_width - 60):
+		player.rect = player.rect.move(-player.vx, 0)
+		player.vx, player.vx_old = (0, 0)
+	if a_x == -3:
+		if player.vx <= 0:
+			player.vx, player.vx_old = 0, 0
+			brake = False
+			a_x = 0
+	if a_x == 3:
+		if player.vx >= 0:
+			player.vx, player.vx_old = 0, 0
+			brake = False
+			a_x = 0
 
-	a_x = 0
+	player.move_y(a_y)
+	# check for a collision with the ground, if so, undo the previous move
+	if pygame.sprite.spritecollide(player, ground_sprites, False):
+		player.rect = player.rect.move(0, -player.vy)
+		player.vy, player.vy_old = 0, 0
+		#jump = False
+		#counter = 0
+	# check for a collision with the blocks, if so, undo the previous move
+	if pygame.sprite.spritecollide(player, block_sprites, False):
+		player.rect = player.rect.move(0, -player.vy)
+		player.vy, player.vy_old = 0, 0
+		#jump = False
+		#counter = 0
 
-	print "x = %d" % player.rect.x
 	player_sprites.clear(screen, background_surf)
-	all_sprites.draw(screen)
 	player_sprites.draw(screen)
 	pygame.display.update()
 	pygame.time.delay(30)
