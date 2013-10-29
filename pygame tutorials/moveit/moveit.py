@@ -36,17 +36,17 @@ class GameSprite(pygame.sprite.Sprite):
 	def move_y(self, a_y):
 		# calculate sprite movement in the y-direction
 		self.vy = self.vy_old + a_y
-		print self.vy
 		# check if we're moving faster than v_max again.
 		if self.vy > 0:
-			if self.vy >= self.v_max:
+			if self.vy > self.v_max:
 				self.vy = self.v_max
 		elif self.vy < 0:
-			if self.vy <= -self.v_max:
+			if self.vy < -self.v_max:
 				self.vy = -self.v_max
 		# update the player rectange with the new y-coordinates
 		self.rect = self.rect.move(0, self.vy)
 		self.vy_old = self.vy
+		
 
 # initialize the game window size
 screen_width = 1366
@@ -63,7 +63,7 @@ all_sprites = pygame.sprite.Group()
 # create a group for the player sprite
 player_sprites = pygame.sprite.Group()
 # create the player sprite
-player = GameSprite('player.png')
+player = GameSprite('player.png', 25)
 # add the player sprite to the all_sprites group
 all_sprites.add(player)
 # add the player sprite to the player_sprites group
@@ -90,7 +90,6 @@ for i in range(1):
 	block_sprites.add(block)
 
 collison = []
-v_max = 25
 #player_sprites.draw(screen)
 block_sprites.draw(screen)
 ground_sprites.draw(screen)
@@ -103,7 +102,6 @@ jump = False
 counter = 0
 # main program loop
 while True:
-
 	# exit gracefully if game window is closed
 	for event in pygame.event.get():
 		if event.type == QUIT:
@@ -112,11 +110,11 @@ while True:
 	# handle keyboard input
 	keys = pygame.key.get_pressed()
 	# if 'a' is pressed move left
-	if keys[K_a]:
+	if keys[K_a] and not jump:
 		a_x = -2
 		brake = False
 	# if 'd' is pressed move right
-	if keys[K_d]:
+	if keys[K_d] and not jump:
 		a_x = 2
 		brake = False
 	# if SPACEBAR is pressed, jump
@@ -196,14 +194,14 @@ while True:
 	if pygame.sprite.spritecollide(player, ground_sprites, False):
 		player.rect = player.rect.move(0, -player.vy)
 		player.vy, player.vy_old = 0, 0
-		#jump = False
-		#counter = 0
+		jump = False
+		counter = 0
 	# check for a collision with the blocks, if so, undo the previous move
 	if pygame.sprite.spritecollide(player, block_sprites, False):
 		player.rect = player.rect.move(0, -player.vy)
 		player.vy, player.vy_old = 0, 0
-		#jump = False
-		#counter = 0
+		jump = False
+		counter = 0
 
 	player_sprites.clear(screen, background_surf)
 	player_sprites.draw(screen)
