@@ -1,4 +1,4 @@
-ALTER TBLE person ADD COLUMN dead INTEGER;
+ALTER TABLE person ADD COLUMN dead INTEGER;
 
 ALTER TABLE person ADD COLUMN phone_number INTEGER;
 
