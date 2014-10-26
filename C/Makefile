@@ -1,4 +1,11 @@
 CFLAGS=-Wall -g
 
+TARGET = ex12
+
+all: $(TARGET)
+
+$(TARGET): $(TARGET).c
+	$(CC) $(CLFAGS) -o $(TARGET) $(TARGET).c
+	
 clean:
-	rm -f ex1
+	$(RM) $(TARGET)
