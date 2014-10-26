@@ -1,5 +1,7 @@
+// include the standard io library
 #include <stdio.h>
 
+// main program
 int main(int argc, char *argv[])
 {
 	int bugs = 100;
